@@ -14,6 +14,10 @@ export default {
         extend: {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+            raleway: ['Raleway', 'sans-serif'],
+            },
+            colors: {
+                'green-pcbtroniks': '#5AB131',
             },
         },
     },
