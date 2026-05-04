@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'syscom' => [
+        'base_url' => env('SYSCOM_BASE_URL'),
+        'api_url' => env('SYSCOM_API_URL'),
+        'client_id' => env('SYSCOM_CLIENT_ID'),
+        'client_secret' => env('SYSCOM_CLIENT_SECRET'),
+    ],
+
 ];
