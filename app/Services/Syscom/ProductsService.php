@@ -21,7 +21,7 @@ class ProductsService
 
     // Métodos para obtener productos, detalles, etc.
 
-    public function getProducts()
+    public function getProducts($params)
     {
         // Obtener el token de acceso
         $tokenResponse = Http::post("{$this->baseUrl}/oauth/token", [
@@ -37,15 +37,30 @@ class ProductsService
         $accessToken = $tokenResponse->json()['access_token'];
 
         // Hacer la solicitud para obtener los productos
-        $productsResponse = Http::withToken($accessToken)->get("{$this->apiUrl}/productos", [
-            'categoria' => 206,
-            'stock' => 1,
-        ]);
+        $productsResponse = Http::withToken($accessToken)->get("{$this->apiUrl}/productos", $this->ParseParams($params));
 
         if ($productsResponse->failed()) {
             throw new \Exception('Error obteniendo los productos: ' . $productsResponse->body());
         }
 
         return $productsResponse->json();
+    }
+
+    private function ParseParams($params)
+    {
+        $queryParams = [];
+        if (isset($params['marca'])) {
+            $queryParams['marca'] = $params['marca'];
+        }
+        if (isset($params['categoria']) && is_numeric($params['categoria'])) {
+            $queryParams['categoria'] = $params['categoria'];
+        }
+        if(isset($params['stock'])) {
+            $queryParams['stock'] = $params['stock'];
+        }
+        if(isset($params['busqueda'])) {
+            $queryParams['busqueda'] = $params['busqueda'];
+        }
+        return $queryParams;
     }
 }
