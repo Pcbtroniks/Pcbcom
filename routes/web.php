@@ -24,4 +24,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// Obtener las categorias de la marca
+Route::get('/api/syscom/categories', [\App\Http\Controllers\Syscom\SyscomCategoriesController::class, 'index'])->name('api.syscom.categories.index');
+Route::get('/api/syscom/categories/{id}', [\App\Http\Controllers\Syscom\SyscomCategoriesController::class, 'show'])->name('api.syscom.categories.show');
+// Esta ruta requiere minimo un query param: marca o categoria
+Route::get('/api/syscom/products', [\App\Http\Controllers\Syscom\SyscomProductsController::class, 'index'])->name('api.syscom.products.index');
 require __DIR__.'/auth.php';
