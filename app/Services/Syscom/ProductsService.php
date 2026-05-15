@@ -61,6 +61,9 @@ class ProductsService
         if(isset($params['busqueda'])) {
             $queryParams['busqueda'] = $params['busqueda'];
         }
+        if(isset($params['pagina']) && is_numeric($params['pagina'])) {
+            $queryParams['pagina'] = $params['pagina'];
+        }
         return $queryParams;
     }
 }
