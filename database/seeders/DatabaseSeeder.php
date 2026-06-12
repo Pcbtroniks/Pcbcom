@@ -2,6 +2,10 @@
 
 namespace Database\Seeders;
 
+use App\Models\Cart;
+use App\Models\CartItem;
+use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -10,16 +14,36 @@ class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $user = User::firstOrCreate(
+            ['email' => 'test@example.com'],
+            [
+                'name' => 'Test User',
+                'password' => 'password',
+                'email_verified_at' => now(),
+            ]
+        );
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        $cart = Cart::factory()
+            ->forUser($user)
+            ->create(['status' => 'open']);
+
+        CartItem::factory()
+            ->count(3)
+            ->for($cart)
+            ->create();
+
+        $cart->recomputeTotals();
+
+        $order = Order::factory()
+            ->paid()
+            ->for($user)
+            ->create();
+
+        OrderItem::factory()
+            ->count(3)
+            ->for($order)
+            ->create();
     }
 }
