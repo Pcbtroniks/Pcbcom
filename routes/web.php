@@ -5,14 +5,41 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', function () {
-    return Inertia::render('Index', [
+Route::get('/', function (Illuminate\Http\Request $request) {
+    $props = [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
         'laravelVersion' => Application::VERSION,
         'phpVersion' => PHP_VERSION,
-    ]);
-});
+    ];
+    if ($request->has('categoria')) {
+        $props['initialCategoria'] = (int) $request->query('categoria');
+    }
+    if ($request->has('busqueda')) {
+        $props['initialBusqueda'] = (string) $request->query('busqueda');
+    }
+    return Inertia::render('Index', $props);
+})->name('catalog.index');
+
+Route::get('/productos/{id}', function (int $id) {
+    return Inertia::render('Products/Show', ['productoId' => $id]);
+})->name('products.show');
+
+Route::get('/recientes', function () {
+    return Inertia::render('Catalog/RecentlyViewed');
+})->middleware('cart.session')->name('recently-viewed.index');
+
+Route::middleware('cart.session')->get('/cart', function () {
+    return Inertia::render('Cart/Index');
+})->name('cart.index');
+
+Route::middleware('cart.session')->get('/checkout', function () {
+    return Inertia::render('Checkout/Index');
+})->name('checkout.index');
+
+Route::get('/orders/{number}', function (string $number) {
+    return Inertia::render('Orders/Show', ['orderNumber' => $number]);
+})->name('orders.show');
 
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
@@ -24,9 +51,4 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Obtener las categorias de la marca
-Route::get('/api/syscom/categories', [\App\Http\Controllers\Syscom\SyscomCategoriesController::class, 'index'])->name('api.syscom.categories.index');
-Route::get('/api/syscom/categories/{id}', [\App\Http\Controllers\Syscom\SyscomCategoriesController::class, 'show'])->name('api.syscom.categories.show');
-// Esta ruta requiere minimo un query param: marca o categoria
-Route::get('/api/syscom/products', [\App\Http\Controllers\Syscom\SyscomProductsController::class, 'index'])->name('api.syscom.products.index');
 require __DIR__.'/auth.php';
