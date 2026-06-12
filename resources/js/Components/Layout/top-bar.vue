@@ -2,7 +2,7 @@
 import { Instagram, Facebook } from 'lucide-vue-next';
 </script>
 <template>
-      <section class="text-sm">
+      <section class="text-sm hidden md:block bg-gray-100">
 
     <div class="px-20 flex justify-between h-10 items-center">
 

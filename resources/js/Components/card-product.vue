@@ -1,17 +1,18 @@
 <script setup lang="ts">
+    import AddToCartButton from '@/Components/AddToCartButton.vue';
     const props = defineProps(['product']);
 
     console.log('product from cardProduct', props.product);
 </script>
 
-<template>  
+<template>
     <div>
         <div data-aos="zoom-in" data-aos-delay="100" class="col-span-1 rounded-xl py-4">
           <article class="overflow-hidden rounded-2xl shadow-lg">
             <div class="bg-gray-200 h-64 w-full relative">
               <span :class="`px-2 text-center bg-gray-100 uppercase text-xs font-semibold rounded-md absolute top-4 left-2 ${product.categorias[0]?.nombre ? 'block' : 'hidden'}`">
                 {{ product.categorias[0]?.nombre || product.category }}
-              </span>          
+              </span>
               <img :src="product.img_portada || product.image" :alt="product.nombre || product.title" class="bg-cover mx-auto h-64 w-full object-cover">
             </div>
             <div class="p-4">
@@ -28,9 +29,11 @@
                 <span class="text-lg">USD</span>
               </div>
             </div>
-            <div class="w-full flex items-center justify-center mt-2 bg-green-600 text-white rounded-b p-2">
-            <a href="" class="">Agregar</a>
-            </div>
+            <AddToCartButton
+                :producto-id="product.producto_id"
+                :precio="product.precios?.precio_1 ?? product.precio ?? null"
+                :titulo="product.titulo"
+            />
             </article>
           </div>
       </div>
