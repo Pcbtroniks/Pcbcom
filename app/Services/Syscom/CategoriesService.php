@@ -2,71 +2,39 @@
 
 namespace App\Services\Syscom;
 
-use Illuminate\Support\Facades\Http;
+use App\Services\Syscom\DTOs\CategoryDto;
+use Illuminate\Support\Facades\Cache;
 
 class CategoriesService
 {
-    protected $apiUrl;
-    protected $baseUrl;
-    protected $clientId;
-    protected $clientSecret;
+    public function __construct(protected SyscomHttpClient $client) {}
 
-    public function __construct()
+    public function getCategories(): array
     {
+        $ttl = (int) config('syscom.cache.categories_ttl', 86400);
+        $cacheKey = 'syscom:categories:all';
 
-        $this->apiUrl = config('services.syscom.api_url');
-        $this->baseUrl = config('services.syscom.base_url');
-        $this->clientId = config('services.syscom.client_id');
-        $this->clientSecret = config('services.syscom.client_secret');
+        return Cache::remember($cacheKey, $ttl, function (): array {
+            $data = $this->client->get('categorias');
+            return array_map(
+                static fn (array $c) => CategoryDto::fromArray($c)->toArray(),
+                $data
+            );
+        });
     }
 
-    public function getCategories()
+    public function getCategoryById(int $id): ?array
     {
-        // Obtener el token de acceso
-        $tokenResponse = Http::post("{$this->baseUrl}/oauth/token", [
-            'grant_type' => 'client_credentials',
-            'client_id' => $this->clientId,
-            'client_secret' => $this->clientSecret,
-        ]);
+        $ttl = (int) config('syscom.cache.categories_ttl', 86400);
+        $cacheKey = "syscom:categories:{$id}";
 
-        if ($tokenResponse->failed()) {
-            throw new \Exception('Error obteniendo el token de acceso: ' . $tokenResponse->body());
-        }
-
-        $accessToken = $tokenResponse->json()['access_token'];
-
-        // Hacer la solicitud para obtener las categorías
-        $categoriesResponse = Http::withToken($accessToken)->get("{$this->apiUrl}/categorias");
-
-        if ($categoriesResponse->failed()) {
-            throw new \Exception('Error obteniendo las categorías: ' . $categoriesResponse->body());
-        }
-
-        return $categoriesResponse->json();
-    }
-
-    public function getCategoryById($id)
-    {
-        // Obtener el token de acceso
-        $tokenResponse = Http::asForm()->post("{$this->baseUrl}/oauth/token", [
-            'grant_type' => 'client_credentials',
-            'client_id' => $this->clientId,
-            'client_secret' => $this->clientSecret,
-        ]);
-
-        if ($tokenResponse->failed()) {
-            throw new \Exception('Error obteniendo el token de acceso: ' . $tokenResponse->body());
-        }
-
-        $accessToken = $tokenResponse->json()['access_token'];
-
-        // Hacer la solicitud para obtener la categoría por ID
-        $categoryResponse = Http::withToken($accessToken)->get("{$this->apiUrl}/categorias/{$id}");
-
-        if ($categoryResponse->failed()) {
-            throw new \Exception('Error obteniendo la categoría: ' . $categoryResponse->body());
-        }
-
-        return $categoryResponse->json();
+        return Cache::remember($cacheKey, $ttl, function () use ($id): ?array {
+            try {
+                $data = $this->client->get("categorias/{$id}");
+            } catch (\Throwable) {
+                return null;
+            }
+            return $data ? CategoryDto::fromArray($data)->toArray() : null;
+        });
     }
 }

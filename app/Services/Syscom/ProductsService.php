@@ -2,68 +2,105 @@
 
 namespace App\Services\Syscom;
 
-use Illuminate\Support\Facades\Http;
+use App\Services\Syscom\DTOs\ProductsPageDto;
+use Illuminate\Support\Facades\Cache;
 
 class ProductsService
 {
-    protected $apiUrl;
-    protected $baseUrl;
-    protected $clientId;
-    protected $clientSecret;
+    public function __construct(protected SyscomHttpClient $client) {}
 
-    public function __construct()
+    public function getProducts(array $params): array
     {
-        $this->apiUrl = config('services.syscom.api_url');
-        $this->baseUrl = config('services.syscom.base_url');
-        $this->clientId = config('services.syscom.client_id');
-        $this->clientSecret = config('services.syscom.client_secret');
+        $query = $this->parseParams($params);
+        $cacheKey = 'syscom:products:'.md5(json_encode($query, JSON_UNESCAPED_UNICODE));
+        $ttl = (int) config('syscom.cache.products_ttl', 600);
+
+        return Cache::remember($cacheKey, $ttl, function () use ($query): array {
+            $data = $this->client->get('productos', $query);
+            return ProductsPageDto::fromArray($data)->toArray();
+        });
     }
 
-    // Métodos para obtener productos, detalles, etc.
-
-    public function getProducts($params)
+    public function getProductById(int $id): ?array
     {
-        // Obtener el token de acceso
-        $tokenResponse = Http::post("{$this->baseUrl}/oauth/token", [
-            'grant_type' => 'client_credentials',
-            'client_id' => $this->clientId,
-            'client_secret' => $this->clientSecret,
-        ]);
+        $cacheKey = "syscom:product:{$id}";
+        $ttl = (int) config('syscom.cache.product_ttl', 600);
 
-        if ($tokenResponse->failed()) {
-            throw new \Exception('Error obteniendo el token de acceso: ' . $tokenResponse->body());
-        }
-
-        $accessToken = $tokenResponse->json()['access_token'];
-
-        // Hacer la solicitud para obtener los productos
-        $productsResponse = Http::withToken($accessToken)->get("{$this->apiUrl}/productos", $this->ParseParams($params));
-
-        if ($productsResponse->failed()) {
-            throw new \Exception('Error obteniendo los productos: ' . $productsResponse->body());
-        }
-
-        return $productsResponse->json();
+        return Cache::remember($cacheKey, $ttl, function () use ($id): ?array {
+            try {
+                $data = $this->client->get("productos/{$id}");
+            } catch (\Throwable) {
+                return null;
+            }
+            return $data ?: null;
+        });
     }
 
-    private function ParseParams($params)
+    public function getBrands(?int $categoriaId = null): array
     {
-        $queryParams = [];
-        if (isset($params['marca'])) {
-            $queryParams['marca'] = $params['marca'];
+        $cacheKey = 'syscom:brands'.($categoriaId ? ":cat:{$categoriaId}" : ':all');
+        $ttl = (int) config('syscom.cache.brands_ttl', 86400);
+
+        return Cache::remember($cacheKey, $ttl, function () use ($categoriaId): array {
+            $query = $categoriaId ? ['categoria' => $categoriaId] : [];
+            try {
+                $data = $this->client->get('marcas', $query);
+                return is_array($data) ? $data : [];
+            } catch (\Throwable) {
+                return [];
+            }
+        });
+    }
+
+    public function getFeaturedCategoryId(): ?int
+    {
+        $cats = app(CategoriesService::class)->getCategories();
+        if ($cats === []) {
+            return null;
         }
+        $preferredNames = ['Redes', 'Videovigilancia', 'Energía', 'Cableado Estructurado', 'Automatización'];
+        foreach ($preferredNames as $name) {
+            foreach ($cats as $c) {
+                if (strcasecmp($c['nombre'] ?? '', $name) === 0) {
+                    return (int) $c['id'];
+                }
+            }
+        }
+        return (int) $cats[0]['id'];
+    }
+
+    protected function parseParams(array $params): array
+    {
+        $query = [];
+
         if (isset($params['categoria']) && is_numeric($params['categoria'])) {
-            $queryParams['categoria'] = $params['categoria'];
+            $query['categoria'] = (int) $params['categoria'];
         }
-        if(isset($params['stock'])) {
-            $queryParams['stock'] = $params['stock'];
+        if (isset($params['marca']) && $params['marca'] !== '') {
+            $query['marca'] = $params['marca'];
         }
-        if(isset($params['busqueda'])) {
-            $queryParams['busqueda'] = $params['busqueda'];
+        if (isset($params['stock']) && $params['stock'] !== '') {
+            $query['stock'] = $params['stock'];
         }
-        if(isset($params['pagina']) && is_numeric($params['pagina'])) {
-            $queryParams['pagina'] = $params['pagina'];
+        if (isset($params['busqueda']) && $params['busqueda'] !== '') {
+            $query['busqueda'] = $params['busqueda'];
         }
-        return $queryParams;
+        if (isset($params['pagina']) && is_numeric($params['pagina'])) {
+            $query['pagina'] = max(1, (int) $params['pagina']);
+        }
+        if (isset($params['orden']) && $params['orden'] !== '') {
+            $query['orden'] = $params['orden'];
+        }
+        if (isset($params['max']) && is_numeric($params['max'])) {
+            $query['max'] = max(1, min(200, (int) $params['max']));
+        }
+        if (isset($params['precio_min']) && is_numeric($params['precio_min'])) {
+            $query['precio_min'] = (float) $params['precio_min'];
+        }
+        if (isset($params['precio_max']) && is_numeric($params['precio_max'])) {
+            $query['precio_max'] = (float) $params['precio_max'];
+        }
+
+        return $query;
     }
 }
