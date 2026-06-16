@@ -8,6 +8,7 @@
 <template>
     <div>
         <div data-aos="zoom-in" data-aos-delay="100" class="col-span-1 rounded-xl py-4">
+        <a href="product.url" >
           <article class="overflow-hidden rounded-2xl shadow-lg">
             <div class="bg-gray-200 h-64 w-full relative">
               <span :class="`px-2 text-center bg-gray-100 uppercase text-xs font-semibold rounded-md absolute top-4 left-2 ${product.categorias[0]?.nombre ? 'block' : 'hidden'}`">
@@ -19,9 +20,7 @@
 
               <div class="mb-2 flex flex-col gap-1 border-t border-gray-200 pt-2">
               <p class="text-green-600 font-extrabold text-xs">{{ product.marca || product.brand }}</p>
-              <a href="product.url" class="text-md text-blue-600 hover:text-blue-800 hover:underline">
-                <h5 class="font-bold text-md text-blue-600 hover:text-blue-800 hover:underline line-clamp-3 ">{{ product.titulo || product.title }}</h5>
-              </a>
+                <h5 class="font-bold text-md hover:text-blue-800 hover:underline text-md text-blue-600 hover:text-blue-800 hover:underline line-clamp-3 ">{{ product.titulo || product.title }}</h5>
               <small class="text-gray-500">{{ product.modelo  || product.model }}</small>
               </div>
               <div class="flex font-bold mt-4 gap-2">
@@ -35,6 +34,7 @@
                 :titulo="product.titulo"
             />
             </article>
+              </a>
           </div>
       </div>
 </template>
