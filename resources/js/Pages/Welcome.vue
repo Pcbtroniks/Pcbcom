@@ -4,6 +4,7 @@ import CardProduct from '@/Components/card-product.vue';
 import BackToTop from '@/Components/Layout/back-to-top.vue';
 import Header from '@/Components/Layout/header.vue';
 import TopBar from '@/Components/Layout/top-bar.vue';
+import Footer from '@/Components/Layout/footer.vue';
 import QuotationRequest from '@/Components/quotation-request.vue';
 import axios from 'axios';
 
@@ -75,13 +76,13 @@ console.log(productos);
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mx-auto ">
             <CardProduct v-for="product in productos" :key="product.id" :product="product" />
-      </div>   
+      </div>
 
         </div>
 
+  </section>
         <QuotationRequest />
         <BackToTop />
-  </section>
-</main>
-
+    </main>
+    <Footer />
 </template>
