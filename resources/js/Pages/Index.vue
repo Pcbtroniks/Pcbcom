@@ -5,6 +5,7 @@ import Header from '@/Components/Layout/header.vue';
 import TopBar from '@/Components/Layout/top-bar.vue';
 import QuotationRequest from '@/Components/quotation-request.vue';
 import BackToTop from '@/Components/Layout/back-to-top.vue';
+import Footer from '@/Components/Layout/footer.vue';
 import SkeletonCardProduct from '@/Components/Skeletons/skeleton-card-product.vue';
 import CategorySidebar from '@/Components/Catalog/CategorySidebar.vue';
 import ProductFilters from '@/Components/Catalog/ProductFilters.vue';
@@ -292,4 +293,5 @@ const description = computed(() => {
         <QuotationRequest />
         <BackToTop />
     </main>
+    <Footer />
 </template>

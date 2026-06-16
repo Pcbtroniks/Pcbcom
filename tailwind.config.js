@@ -13,11 +13,14 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                sans: ['Open Sans', ...defaultTheme.fontFamily.sans],
             raleway: ['Raleway', 'sans-serif'],
             },
             colors: {
                 'green-pcbtroniks': '#5AB131',
+                'gray-pcbtroniks': '#F5F5F5',
+                'mobile-menu': '#1F3548',
+                'selected-menu': '#9eccf4',
             },
         },
     },
