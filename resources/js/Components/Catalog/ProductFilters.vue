@@ -42,12 +42,6 @@ const activeCount = computed(() => {
     return n;
 });
 
-const stockOptions = [
-    { value: '', label: 'Todos' },
-    { value: 'disponible', label: 'En stock' },
-    { value: 'bajo', label: 'Stock bajo (≤5)' },
-    { value: 'agotado', label: 'Agotado' },
-];
 
 </script>
 
@@ -90,40 +84,6 @@ const stockOptions = [
                 <option :value="undefined">Todas las marcas</option>
                 <option v-for="b in brands" :key="b.id" :value="b.id">{{ b.nombre }}</option>
             </select>
-        </div>
-
-        <div class="space-y-1">
-            <label class="text-xs font-medium text-gray-600">Disponibilidad</label>
-            <select
-                v-model="local.stock"
-                class="w-full border border-gray-200 rounded-md text-sm py-1.5 px-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                @change="commit"
-            >
-                <option v-for="s in stockOptions" :key="s.value || 'all'" :value="s.value">{{ s.label }}</option>
-            </select>
-        </div>
-
-        <div class="space-y-1">
-            <label class="text-xs font-medium text-gray-600">Precio (USD)</label>
-            <div class="flex items-center gap-2">
-                <input
-                    v-model.number="local.precio_min"
-                    type="number"
-                    min="0"
-                    placeholder="Mín"
-                    class="w-full border border-gray-200 rounded-md text-sm py-1.5 px-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    @change="commit"
-                />
-                <span class="text-gray-400">—</span>
-                <input
-                    v-model.number="local.precio_max"
-                    type="number"
-                    min="0"
-                    placeholder="Máx"
-                    class="w-full border border-gray-200 rounded-md text-sm py-1.5 px-2 focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                    @change="commit"
-                />
-            </div>
         </div>
     </div>
 </template>
